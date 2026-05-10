@@ -239,22 +239,32 @@ tg.ready();
 tg.expand();
 
 // ── Parse companies from URL params ──────────────────────────────────────────
-const params   = new URLSearchParams(window.location.search);
-const raw      = params.get("companies") || "";
-const country  = params.get("country")   || "";
-const flag     = params.get("flag")      || "";
+const params  = new URLSearchParams(window.location.search);
+const rawData = params.get("data")    || "";
+const country = params.get("country") || "";
 
-const companies = raw ? raw.split("|").map(s => {
-  const [name, amount] = s.split(":::");
-  return { name: decodeURIComponent(name), amount: amount ? decodeURIComponent(amount) : null };
-}) : [];
+// data = newline-separated lines, each "name|||amount"
+const companies = rawData
+  ? rawData.split("\n").filter(Boolean).map(line => {
+      const sep = line.indexOf("|||");
+      if (sep === -1) return { name: line.trim(), amount: null };
+      return {
+        name:   line.slice(0, sep).trim(),
+        amount: line.slice(sep + 3).trim() || null,
+      };
+    })
+  : [];
+
+const flag = "";  // no longer passed separately
 
 // ── Render ────────────────────────────────────────────────────────────────────
 const list    = document.getElementById("companies-list");
 const sub     = document.getElementById("header-sub");
 const empty   = document.getElementById("empty-state");
 
-if (flag) document.querySelector("h1").textContent = flag + " Add Holdings";
+const FLAGS = { fi: "🇫🇮", se: "🇸🇪", dk: "🇩🇰", no: "🇳🇴" };
+const countryFlag = FLAGS[country] || "";
+if (countryFlag) document.querySelector("h1").textContent = countryFlag + " Add Holdings";
 
 if (companies.length === 0) {
   empty.style.display = "block";
@@ -264,7 +274,7 @@ if (companies.length === 0) {
 
   const label = document.createElement("div");
   label.className = "group-label";
-  label.textContent = (flag || country || "").toUpperCase() + " Companies paying dividends this month";
+  label.textContent = (countryFlag ? countryFlag + " " : "") + (country || "").toUpperCase() + " Companies paying dividends this month";
   list.appendChild(label);
 
   companies.forEach((c, i) => {
