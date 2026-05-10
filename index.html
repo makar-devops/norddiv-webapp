@@ -238,6 +238,16 @@ const tg = window.Telegram.WebApp;
 tg.ready();
 tg.expand();
 
+// ── DEBUG: show raw URL for 30s (remove after testing) ──
+(function() {
+  const dbg = document.createElement("div");
+  dbg.id = "debug-bar";
+  dbg.style.cssText = "position:fixed;top:0;left:0;right:0;background:#ffcc00;color:#000;font-size:11px;padding:4px 8px;z-index:999;word-break:break-all;white-space:pre-wrap;max-height:80px;overflow:auto";
+  dbg.textContent = "URL: " + window.location.href;
+  document.body.appendChild(dbg);
+  setTimeout(() => dbg.remove(), 30000);
+})();
+
 // ── Parse companies from URL params ──────────────────────────────────────────
 const params  = new URLSearchParams(window.location.search);
 const rawData = params.get("data")    || "";
